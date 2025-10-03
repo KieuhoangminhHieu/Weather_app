@@ -1,22 +1,37 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather App</title>
-    <link rel="stylesheet" href="style.css"
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather App</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="app">
-        <h1>Weather App</h1>
-        <div class="search-box">
-            <input type="text" id="cityInput" placeholder="Enter city name...">
-            <button id="searchBtn">Search</button>
-        </div>
+  <div class="app">
+    <h1 id="appTitle">Weather App</h1>
 
-        <div class="weather=result" id="weatherResult">
-
-        </div>
+    <div class="language-switch">
+      <label for="languageSelect">🌐</label>
+      <select id="languageSelect">
+        <option value="vi">Tiếng Việt</option>
+        <option value="en" selected>English</option>
+      </select>
     </div>
-    <script src="script.js"></script>
+
+    <div class="search-container">
+      <input type="text" id="cityInput" placeholder="Enter city name..." class="search-box" />
+      <button id="searchBtn" class="search-button">Search</button>
+    </div>
+
+    <div class="weather-result" id="weatherResult"></div>
+
+    <div class="history-section" id="historySection" style="display:none;">
+      <h3>Lịch sử tìm kiếm</h3>
+      <ul id="historyList"></ul>
+      <button id="backBtn" class="search-button">🔙 Quay lại</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
