@@ -1,25 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weather App</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <!-- 🌙 Nút chuyển chế độ tối -->
-  <div class="theme-toggle">
-    <input type="checkbox" id="themeToggle" />
-    <label for="themeToggle" class="toggle-label">🌙</label>
-  </div>
+  <!-- 🔧 Nhóm điều khiển giao diện -->
+<div class="ui-controls">
+  <label for="themeToggle" class="toggle-label">🌙</label>
+  <input type="checkbox" id="themeToggle" />
 
-  <!-- 🌐 Nút chuyển ngôn ngữ -->
   <div class="language-toggle">
     <button id="langVi" class="lang-button">🇻🇳</button>
     <button id="langEn" class="lang-button">🇺🇸</button>
   </div>
-
+</div>
   <div class="app">
     <h1 id="appTitle">Weather App</h1>
 
@@ -29,6 +28,7 @@
     </div>
 
     <div class="weather-result" id="weatherResult"></div>
+    <div id="aiAdviceBox" class="ai-advice" style="display:none;"></div>
     <div id="weatherAlert" style="margin-top: 20px;"></div>
 
     <!-- 🔥 Biểu đồ nhiệt độ -->
@@ -45,10 +45,25 @@
     </div>
   </div>
 
+  <!-- 💬 Nút mở chat -->
+  <div id="chatToggleBtn">💬</div>
+
+  <!-- 💬 Khung chat AI -->
+  <div id="chatBox">
+    <div id="chatHeader">WeatherAI Chat</div>
+    <div id="chatMessages"></div>
+    <div id="chatInputArea">
+      <input type="text" id="chatInput" placeholder="Hỏi thời tiết..." />
+      <button id="chatSendBtn">Gửi</button>
+    </div>
+  </div>
+
   <!-- Import script đúng thứ tự -->
-  <script src="script.js"></script>
-  <script src="chart.js"></script>
   <script src="lang.js"></script>
+  <script src="chart.js"></script>
   <script src="alert.js"></script>
+  <script src="ai.js"></script>
+  <script src="script.js"></script>
+  <script src="chatbox.js"></script>
 </body>
 </html>

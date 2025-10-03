@@ -12,7 +12,11 @@ let currentWeatherData = null;
 let currentForecastData = null;
 let currentLang = "vi";
 let searchHistory = JSON.parse(localStorage.getItem("weatherHistory")) || [];
-
+function translateDescription(raw) {
+  const desc = raw.toLowerCase();
+  const map = translations[currentLang].descriptions;
+  return map[desc] || raw;
+}
 function updateLanguage(lang) {
   const t = translations[lang];
 
@@ -61,7 +65,8 @@ backBtn.addEventListener("click", () => {
   historySection.style.display = "none";
   cityInput.style.display = "inline-block";
   searchBtn.style.display = "inline-block";
-  document.getElementById("chartSection").style.display = "none"; // Ẩn biểu đồ khi quay lại
+  document.getElementById("chartSection").style.display = "none";
+  document.getElementById("aiAdviceBox").style.display = "none";
 });
 
 function saveToHistory(city) {
@@ -124,12 +129,13 @@ function showWeather(data) {
   const icon = weather[0].icon;
   const iconUrl = `https://openweathermap.org/img/wn/${icon}@2x.png`;
   const t = translations[currentLang];
+  
 
   weatherResult.innerHTML = `
     <h3>${t.todayTitle}</h3>
     <h2>${name}</h2>
     <img src="${iconUrl}" alt="${weather[0].description}">
-    <p>${weather[0].description}</p>
+    <p>${translateDescription(weather[0].description)}</p>
     <p>${t.temp}: ${main.temp}°C</p>
     <p>${t.humidity}: ${main.humidity}%</p>
     <p>${t.wind}: ${wind.speed} m/s</p>
@@ -139,6 +145,8 @@ function showWeather(data) {
 
   // 🔔 Kiểm tra và hiển thị cảnh báo
   showWeatherAlert(main.temp, weather[0].main, wind.speed);
+  getAiAdvice(data);
+  document.getElementById("aiAdviceBox").style.display = "block";
 }
 function showForecast(data) {
   currentForecastData = data;
@@ -164,7 +172,7 @@ function showForecast(data) {
       <div class="forecast-day">
         <h4>${date}</h4>
         <img src="${iconUrl}" alt="${item.weather[0].description}">
-        <p>${item.weather[0].description}</p>
+        <p>${translateDescription(item.weather[0].description)}</p>
         <p>${t.temp}: ${item.main.temp}°C</p>
         <p>${t.humidity}: ${item.main.humidity}%</p>
         <p>${t.wind}: ${item.wind.speed} m/s</p>
@@ -200,6 +208,7 @@ window.addEventListener("load", () => {
   } else {
     console.warn("Trình duyệt không hỗ trợ định vị.");
     document.getElementById("chartSection").style.display = "none";
+    document.getElementById("aiAdviceBox").style.display = "none";
   }
 });
 
@@ -251,6 +260,31 @@ function setLanguage(lang) {
   if (currentWeatherData) showWeather(currentWeatherData);
   if (currentForecastData) showForecast(currentForecastData);
 }
+async function getAiAdvice(data) {
+  const city = data.name;
+
+  try {
+    const response = await fetch("http://localhost:8080/ai/weather/advice", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ city })
+    });
+
+    if (!response.ok) throw new Error("AI server error");
+
+    const result = await response.json();
+
+    // Hiển thị lời khuyên từ AI
+    document.getElementById("aiAdviceBox").innerHTML = `<p>${result.advice}</p>`;
+  } catch (error) {
+    console.warn("Lỗi AI, dùng tư vấn nội bộ:", error.message);
+
+    // ✅ Fallback: dùng hàm nội bộ nếu AI lỗi
+    const fallback = generateWeatherAdvice(data);
+    document.getElementById("aiAdviceBox").innerHTML = `<p>${fallback}</p>`;
+  }
+}
+
 langVi.addEventListener("click", () => setLanguage("vi"));
 langEn.addEventListener("click", () => setLanguage("en"));
 // ✅ Khởi tạo trạng thái ban đầu

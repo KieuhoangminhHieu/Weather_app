@@ -202,16 +202,19 @@ body.dark .chart-container {
   background: rgba(40, 40, 40, 0.8);
 }
 
-/* 🌙 Nút Dark Mode */
-.theme-toggle {
+/* 🔧 Nhóm điều khiển giao diện */
+.ui-controls {
   position: fixed;
   top: 20px;
   right: 20px;
   z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
 }
 
 .toggle-label {
-  display: inline-block;
   font-size: 24px;
   background: var(--primary);
   color: white;
@@ -230,12 +233,7 @@ body.dark .chart-container {
   display: none;
 }
 
-/* 🌐 Nút ngôn ngữ */
 .language-toggle {
-  position: fixed;
-  top: 70px;
-  right: 20px;
-  z-index: 1000;
   display: flex;
   gap: 10px;
 }
@@ -258,6 +256,119 @@ body.dark .chart-container {
 
 .lang-button.active {
   background: var(--dark-bg);
+}
+
+/* 💬 Nút mở chat */
+#chatToggleBtn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transition: background 0.3s ease;
+}
+
+#chatToggleBtn:hover {
+  background: var(--primary-dark);
+}
+
+/* 💬 Khung chat */
+#chatBox {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 300px;
+  max-height: 400px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+#chatHeader {
+  background: var(--primary);
+  color: white;
+  padding: 10px;
+  font-weight: bold;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+#chatMessages {
+  padding: 10px;
+  overflow-y: auto;
+  height: 250px;
+  font-size: 14px;
+  background: #f9f9f9;
+}
+
+#chatInputArea {
+  display: flex;
+  border-top: 1px solid #ccc;
+}
+
+#chatInput {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-bottom-left-radius: 8px;
+  font-size: 14px;
+}
+#chatSendBtn {
+  padding: 8px 12px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-bottom-right-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* 💬 Dark mode cho chat */
+body.dark #chatBox {
+  background: #2c3e50;
+  color: var(--text-light);
+}
+
+body.dark #chatHeader {
+  background: #3498db;
+}
+
+body.dark #chatMessages {
+  background: #34495e;
+}
+
+body.dark #chatInput {
+  background: #3c3c3c;
+  color: white;
+}
+
+body.dark #chatSendBtn {
+  background: #3498db;
+}
+
+/* 💡 AI gợi ý */
+.ai-advice {
+  margin-top: 12px;
+  padding: 10px;
+  background: #f0f8ff;
+  border-left: 4px solid var(--primary);
+  font-style: italic;
+  border-radius: 6px;
 }
 
 /* 🎬 Animation */
