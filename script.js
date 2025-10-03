@@ -13,7 +13,6 @@ let searchHistory = JSON.parse(localStorage.getItem("weatherHistory")) || [];
 
 const translations = {
   vi: {
-    todayTitle: "Thời tiết hôm nay",
     title: "Ứng dụng thời tiết",
     placeholder: "Nhập tên thành phố...",
     search: "Tìm kiếm",
@@ -22,10 +21,10 @@ const translations = {
     temp: "🌡️ Nhiệt độ",
     humidity: "💧 Độ ẩm",
     wind: "💨 Gió",
-    forecast: "Dự báo 5 ngày tới"
+    forecast: "Dự báo 5 ngày tới",
+    todayTitle: "Thời tiết hôm nay"
   },
   en: {
-    todayTitle: "Current Weather",
     title: "Weather App",
     placeholder: "Enter city name...",
     search: "Search",
@@ -34,7 +33,8 @@ const translations = {
     temp: "🌡️ Temperature",
     humidity: "💧 Humidity",
     wind: "💨 Wind",
-    forecast: "5-Day Forecast"
+    forecast: "5-Day Forecast",
+    todayTitle: "Current Weather"
   }
 };
 
@@ -72,6 +72,7 @@ backBtn.addEventListener("click", () => {
   cityInput.style.display = "inline-block";
   searchBtn.style.display = "inline-block";
   languageSelect.style.display = "inline-block";
+  document.getElementById("chartSection").style.display = "none"; // Ẩn biểu đồ khi quay lại
 });
 
 function saveToHistory(city) {
@@ -112,26 +113,8 @@ async function getWeather(city) {
     showWeather(data);
   } catch (error) {
     weatherResult.innerHTML = `<p style="color:red">${error.message}</p>`;
+    document.getElementById("chartSection").style.display = "none"; // Ẩn biểu đồ nếu lỗi
   }
-}
-
-function showWeather(data) {
-  const { name, main, weather, wind } = data;
-  const icon = weather[0].icon;
-  const iconUrl = `https://openweathermap.org/img/wn/${icon}@2x.png`;
-  const t = translations[currentLang];
-
-  weatherResult.innerHTML = `
-    <h3>${translations[currentLang].todayTitle || "Thời tiết hôm nay"}</h3>
-    <h2>${name}</h2>
-    <img src="${iconUrl}" alt="${weather[0].description}">
-    <p>${weather[0].description}</p>
-    <p>${t.temp}: ${main.temp}°C</p>
-    <p>${t.humidity}: ${main.humidity}%</p>
-    <p>${t.wind}: ${wind.speed} m/s</p>
-    <h3>${t.forecast}</h3>
-    <div id="forecastContainer"></div>
-  `;
 }
 
 async function getForecast(city) {
@@ -147,23 +130,41 @@ async function getForecast(city) {
     if (forecastContainer) {
       forecastContainer.innerHTML = `<p style="color:red">${error.message}</p>`;
     }
+    document.getElementById("chartSection").style.display = "none"; // Ẩn biểu đồ nếu lỗi
   }
+}
+
+function showWeather(data) {
+  const { name, main, weather, wind } = data;
+  const icon = weather[0].icon;
+  const iconUrl = `https://openweathermap.org/img/wn/${icon}@2x.png`;
+  const t = translations[currentLang];
+
+  weatherResult.innerHTML = `
+    <h3>${t.todayTitle}</h3>
+    <h2>${name}</h2>
+    <img src="${iconUrl}" alt="${weather[0].description}">
+    <p>${weather[0].description}</p>
+    <p>${t.temp}: ${main.temp}°C</p>
+    <p>${t.humidity}: ${main.humidity}%</p>
+    <p>${t.wind}: ${wind.speed} m/s</p>
+    <h3>${t.forecast}</h3>
+    <div id="forecastContainer"></div>
+  `;
 }
 
 function showForecast(data) {
   const t = translations[currentLang];
   const forecastContainer = document.getElementById("forecastContainer");
   const dailyData = {};
-
   const today = new Date().toISOString().split("T")[0];
 
-data.list.forEach(item => {
-  const date = item.dt_txt.split(" ")[0];
-  if (date !== today && !dailyData[date]) {
-    dailyData[date] = item;
-  }
-});
-
+  data.list.forEach(item => {
+    const [date, time] = item.dt_txt.split(" ");
+    if (date !== today && time === "12:00:00" && !dailyData[date]) {
+      dailyData[date] = item;
+    }
+  });
 
   let html = "";
   for (const date in dailyData) {
@@ -184,8 +185,67 @@ data.list.forEach(item => {
   }
 
   forecastContainer.innerHTML = html;
+
+  // ✅ Chỉ hiển thị biểu đồ nếu có ít nhất 2 ngày dữ liệu
+  if (Object.keys(dailyData).length >= 2) {
+    document.getElementById("chartSection").style.display = "block";
+    renderTemperatureChart(dailyData);
+  } else {
+    document.getElementById("chartSection").style.display = "none";
+  }
 }
 
-// Khởi động với ngôn ngữ mặc định và hiển thị lịch sử nếu có
+// 📍 Tự động lấy vị trí khi mở app
+window.addEventListener("load", () => {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        getWeatherByCoords(latitude, longitude);
+        getForecastByCoords(latitude, longitude);
+      },
+      (error) => {
+        console.warn("Không lấy được vị trí:", error.message);
+        document.getElementById("chartSection").style.display = "none";
+      }
+    );
+  } else {
+    console.warn("Trình duyệt không hỗ trợ định vị.");
+    document.getElementById("chartSection").style.display = "none";
+  }
+});
+
+async function getWeatherByCoords(lat, lon) {
+  const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(translations[currentLang].notFound);
+    const data = await response.json();
+    showWeather(data);
+  } catch (error) {
+    weatherResult.innerHTML = `<p style="color:red">${error.message}</p>`;
+    document.getElementById("chartSection").style.display = "none";
+  }
+}
+
+async function getForecastByCoords(lat, lon) {
+  const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(translations[currentLang].notFound);
+    const data = await response.json();
+    showForecast(data);
+  } catch (error) {
+    const forecastContainer = document.getElementById("forecastContainer");
+    if (forecastContainer) {
+      forecastContainer.innerHTML = `<p style="color:red">${error.message}</p>`;
+    }
+    document.getElementById("chartSection").style.display = "none"; // Ẩn biểu đồ nếu lỗi
+  }
+}
+
+// 🚀 Khởi động app
 updateLanguage(currentLang);
 renderHistory();

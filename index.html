@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weather App</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="app">
@@ -25,6 +26,13 @@
 
     <div class="weather-result" id="weatherResult"></div>
 
+    <!-- 🔥 Biểu đồ nhiệt độ -->
+    <div class="chart-container" id="chartSection" style="display:none;">
+        <h3 style="text-align:center">📊 Biểu đồ nhiệt độ 5 ngày</h3>
+        <canvas id="tempChart"></canvas>
+    </div>
+
+    <!-- 📜 Lịch sử tìm kiếm -->
     <div class="history-section" id="historySection" style="display:none;">
       <h3>Lịch sử tìm kiếm</h3>
       <ul id="historyList"></ul>
@@ -32,6 +40,8 @@
     </div>
   </div>
 
+  <!-- Import script đúng thứ tự -->
   <script src="script.js"></script>
+  <script src="chart.js"></script>
 </body>
 </html>
