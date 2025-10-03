@@ -1,5 +1,17 @@
+/* 🌐 Font hiện đại */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
+/* 🎨 Biến màu để dễ chỉnh sửa */
+:root {
+  --primary: #4a90e2;
+  --primary-dark: #357ab8;
+  --dark-bg: #2c3e50;
+  --light-bg: #ffffff;
+  --text-dark: #333;
+  --text-light: #f0f0f0;
+}
+
+/* 🌈 Nền và bố cục chính */
 body {
   font-family: 'Poppins', sans-serif;
   background: linear-gradient(135deg, #74ebd5, #d9afd9);
@@ -21,16 +33,14 @@ body {
   box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
+/* 🧭 Tiêu đề */
 h1 {
   margin-bottom: 20px;
   font-size: 24px;
-  color: #333;
+  color: var(--text-dark);
 }
 
-.language-switch {
-  margin-bottom: 10px;
-}
-
+/* 🔍 Tìm kiếm */
 .search-container {
   display: flex;
   justify-content: center;
@@ -48,7 +58,7 @@ h1 {
 
 .search-button {
   padding: 10px 15px;
-  background: #4a90e2;
+  background: var(--primary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -57,15 +67,27 @@ h1 {
 }
 
 .search-button:hover {
-  background: #357ab8;
+  background: var(--primary-dark);
 }
 
+/* 🌤️ Kết quả thời tiết */
 .weather-result {
   margin-top: 20px;
   font-size: 16px;
   color: #444;
 }
 
+/* 🔔 Cảnh báo thời tiết */
+#weatherAlert div {
+  font-weight: bold;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  margin-top: 10px;
+  animation: fadeInUp 0.5s ease;
+}
+
+/* 📅 Dự báo */
 #forecastContainer {
   display: flex;
   justify-content: space-between;
@@ -92,7 +114,7 @@ h1 {
 .forecast-day h4 {
   margin-bottom: 8px;
   font-size: 16px;
-  color: #333;
+  color: var(--text-dark);
 }
 
 .forecast-day img {
@@ -101,17 +123,28 @@ h1 {
   animation: weatherPulse 2s infinite;
 }
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+/* 📊 Biểu đồ */
+.chart-container {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 30px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  overflow-x: auto;
 }
 
-@keyframes weatherPulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 1; }
+#tempChart {
+  margin-top: 30px;
+  max-width: 100%;
+  height: 300px;
 }
 
+canvas {
+  display: block;
+  margin: 0 auto;
+}
+
+/* 📜 Lịch sử */
 .history-section {
   margin-top: 30px;
   text-align: left;
@@ -138,21 +171,103 @@ h1 {
 .history-item:hover {
   background: #d0e6ff;
 }
-#tempChart {
-  margin-top: 30px;
-  max-width: 100%;
-  height: 300px;
+
+/* 🌙 Dark Mode */
+body.dark {
+  background: linear-gradient(135deg, var(--dark-bg), #4ca1af);
+  color: var(--text-light);
 }
 
-canvas {
-  display: block;
-  margin: 0 auto;
+body.dark .app {
+  background: rgba(30, 30, 30, 0.9);
+  color: var(--text-light);
 }
-.chart-container {
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 12px;
-  padding: 20px;
-  margin-top: 30px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  overflow-x: auto;
+
+body.dark .search-box {
+  background: #444;
+  color: #fff;
+  border: 1px solid #666;
+}
+
+body.dark .search-button {
+  background: #3498db;
+}
+
+body.dark .forecast-day {
+  background: rgba(50, 50, 50, 0.8);
+  color: #eee;
+}
+
+body.dark .chart-container {
+  background: rgba(40, 40, 40, 0.8);
+}
+
+/* 🌙 Nút Dark Mode */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.toggle-label {
+  display: inline-block;
+  font-size: 24px;
+  background: var(--primary);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transition: background 0.3s ease;
+}
+
+.toggle-label:hover {
+  background: var(--primary-dark);
+}
+
+#themeToggle {
+  display: none;
+}
+
+/* 🌐 Nút ngôn ngữ */
+.language-toggle {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  gap: 10px;
+}
+
+.lang-button {
+  font-size: 20px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 50px;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transition: background 0.3s ease;
+}
+
+.lang-button:hover {
+  background: var(--primary-dark);
+}
+
+.lang-button.active {
+  background: var(--dark-bg);
+}
+
+/* 🎬 Animation */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes weatherPulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
 }

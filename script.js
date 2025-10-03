@@ -2,53 +2,43 @@ const apiKey = "fa71133247a2cf1b3230a54f371ac4f5";
 const searchBtn = document.getElementById("searchBtn");
 const cityInput = document.getElementById("cityInput");
 const weatherResult = document.getElementById("weatherResult");
-const languageSelect = document.getElementById("languageSelect");
 const appTitle = document.getElementById("appTitle");
 const historySection = document.getElementById("historySection");
 const historyList = document.getElementById("historyList");
 const backBtn = document.getElementById("backBtn");
+const shareBtn = document.getElementById("shareBtn");
 
-let currentLang = languageSelect.value;
+let currentWeatherData = null;
+let currentForecastData = null;
+let currentLang = "vi";
 let searchHistory = JSON.parse(localStorage.getItem("weatherHistory")) || [];
-
-const translations = {
-  vi: {
-    title: "Ứng dụng thời tiết",
-    placeholder: "Nhập tên thành phố...",
-    search: "Tìm kiếm",
-    loading: "Đang tải dữ liệu...",
-    notFound: "Không tìm thấy thành phố",
-    temp: "🌡️ Nhiệt độ",
-    humidity: "💧 Độ ẩm",
-    wind: "💨 Gió",
-    forecast: "Dự báo 5 ngày tới",
-    todayTitle: "Thời tiết hôm nay"
-  },
-  en: {
-    title: "Weather App",
-    placeholder: "Enter city name...",
-    search: "Search",
-    loading: "Loading...",
-    notFound: "City not found",
-    temp: "🌡️ Temperature",
-    humidity: "💧 Humidity",
-    wind: "💨 Wind",
-    forecast: "5-Day Forecast",
-    todayTitle: "Current Weather"
-  }
-};
 
 function updateLanguage(lang) {
   const t = translations[lang];
+
   appTitle.textContent = t.title;
   cityInput.placeholder = t.placeholder;
   searchBtn.textContent = t.search;
-}
 
-languageSelect.addEventListener("change", (e) => {
-  currentLang = e.target.value;
-  updateLanguage(currentLang);
-});
+  // ✅ Cập nhật tiêu đề thời tiết hôm nay nếu đã hiển thị
+  const todayTitle = document.querySelector("#weatherResult h3");
+  if (todayTitle) todayTitle.textContent = t.todayTitle;
+
+  // ✅ Cập nhật tiêu đề dự báo nếu đã hiển thị
+  const forecastTitle = document.querySelector("#weatherResult h3 + h3");
+  if (forecastTitle) forecastTitle.textContent = t.forecast;
+
+  // ✅ Cập nhật tiêu đề biểu đồ nếu đã hiển thị
+  const chartTitle = document.querySelector("#chartSection h3");
+  if (chartTitle) chartTitle.textContent = "📊 " + t.forecast;
+
+  // ✅ Cập nhật tiêu đề lịch sử
+  const historyTitle = document.querySelector("#historySection h3");
+  if (historyTitle) historyTitle.textContent = lang === "vi" ? "Lịch sử tìm kiếm" : "Search History";
+
+  // ✅ Cập nhật nút quay lại
+  backBtn.textContent = lang === "vi" ? "🔙 Quay lại" : "🔙 Back";
+}
 
 searchBtn.addEventListener("click", () => {
   const city = cityInput.value.trim();
@@ -71,7 +61,6 @@ backBtn.addEventListener("click", () => {
   historySection.style.display = "none";
   cityInput.style.display = "inline-block";
   searchBtn.style.display = "inline-block";
-  languageSelect.style.display = "inline-block";
   document.getElementById("chartSection").style.display = "none"; // Ẩn biểu đồ khi quay lại
 });
 
@@ -83,7 +72,6 @@ function saveToHistory(city) {
   }
   renderHistory();
 }
-
 function renderHistory() {
   historyList.innerHTML = "";
   searchHistory.forEach(city => {
@@ -100,9 +88,7 @@ function renderHistory() {
   historySection.style.display = "block";
   cityInput.style.display = "none";
   searchBtn.style.display = "none";
-  languageSelect.style.display = "none";
 }
-
 async function getWeather(city) {
   const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
 
@@ -116,7 +102,6 @@ async function getWeather(city) {
     document.getElementById("chartSection").style.display = "none"; // Ẩn biểu đồ nếu lỗi
   }
 }
-
 async function getForecast(city) {
   const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
 
@@ -133,8 +118,8 @@ async function getForecast(city) {
     document.getElementById("chartSection").style.display = "none"; // Ẩn biểu đồ nếu lỗi
   }
 }
-
 function showWeather(data) {
+  currentWeatherData = data;
   const { name, main, weather, wind } = data;
   const icon = weather[0].icon;
   const iconUrl = `https://openweathermap.org/img/wn/${icon}@2x.png`;
@@ -151,9 +136,12 @@ function showWeather(data) {
     <h3>${t.forecast}</h3>
     <div id="forecastContainer"></div>
   `;
-}
 
+  // 🔔 Kiểm tra và hiển thị cảnh báo
+  showWeatherAlert(main.temp, weather[0].main, wind.speed);
+}
 function showForecast(data) {
+  currentForecastData = data;
   const t = translations[currentLang];
   const forecastContainer = document.getElementById("forecastContainer");
   const dailyData = {};
@@ -245,7 +233,28 @@ async function getForecastByCoords(lat, lon) {
     document.getElementById("chartSection").style.display = "none"; // Ẩn biểu đồ nếu lỗi
   }
 }
+const themeToggle = document.getElementById("themeToggle");
 
+themeToggle.addEventListener("change", () => {
+  document.body.classList.toggle("dark", themeToggle.checked);
+});
+const langVi = document.getElementById("langVi");
+const langEn = document.getElementById("langEn");
+
+function setLanguage(lang) {
+  currentLang = lang;
+  updateLanguage(currentLang);
+  langVi.classList.toggle("active", lang === "vi");
+  langEn.classList.toggle("active", lang === "en");
+
+  // ✅ Re-render nếu đã có dữ liệu
+  if (currentWeatherData) showWeather(currentWeatherData);
+  if (currentForecastData) showForecast(currentForecastData);
+}
+langVi.addEventListener("click", () => setLanguage("vi"));
+langEn.addEventListener("click", () => setLanguage("en"));
+// ✅ Khởi tạo trạng thái ban đầu
+setLanguage(currentLang);
 // 🚀 Khởi động app
 updateLanguage(currentLang);
 renderHistory();

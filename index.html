@@ -8,16 +8,20 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+  <!-- 🌙 Nút chuyển chế độ tối -->
+  <div class="theme-toggle">
+    <input type="checkbox" id="themeToggle" />
+    <label for="themeToggle" class="toggle-label">🌙</label>
+  </div>
+
+  <!-- 🌐 Nút chuyển ngôn ngữ -->
+  <div class="language-toggle">
+    <button id="langVi" class="lang-button">🇻🇳</button>
+    <button id="langEn" class="lang-button">🇺🇸</button>
+  </div>
+
   <div class="app">
     <h1 id="appTitle">Weather App</h1>
-
-    <div class="language-switch">
-      <label for="languageSelect">🌐</label>
-      <select id="languageSelect">
-        <option value="vi">Tiếng Việt</option>
-        <option value="en" selected>English</option>
-      </select>
-    </div>
 
     <div class="search-container">
       <input type="text" id="cityInput" placeholder="Enter city name..." class="search-box" />
@@ -25,11 +29,12 @@
     </div>
 
     <div class="weather-result" id="weatherResult"></div>
+    <div id="weatherAlert" style="margin-top: 20px;"></div>
 
     <!-- 🔥 Biểu đồ nhiệt độ -->
     <div class="chart-container" id="chartSection" style="display:none;">
-        <h3 style="text-align:center">📊 Biểu đồ nhiệt độ 5 ngày</h3>
-        <canvas id="tempChart"></canvas>
+      <h3 style="text-align:center">📊 Biểu đồ nhiệt độ 5 ngày</h3>
+      <canvas id="tempChart"></canvas>
     </div>
 
     <!-- 📜 Lịch sử tìm kiếm -->
@@ -43,5 +48,7 @@
   <!-- Import script đúng thứ tự -->
   <script src="script.js"></script>
   <script src="chart.js"></script>
+  <script src="lang.js"></script>
+  <script src="alert.js"></script>
 </body>
 </html>
