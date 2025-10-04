@@ -5,33 +5,42 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weather App</title>
-  <link rel="stylesheet" href="style.css" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <!-- 🔧 Nhóm điều khiển giao diện -->
-<div class="ui-controls">
-  <label for="themeToggle" class="toggle-label">🌙</label>
-  <input type="checkbox" id="themeToggle" />
+  <div class="ui-controls">
+    <label for="themeToggle" class="toggle-label">🌙</label>
+    <input type="checkbox" id="themeToggle" />
 
-  <div class="language-toggle">
-    <button id="langVi" class="lang-button">🇻🇳</button>
-    <button id="langEn" class="lang-button">🇺🇸</button>
+    <div class="language-toggle">
+      <button id="langVi" class="lang-button">🇻🇳</button>
+      <button id="langEn" class="lang-button">🇺🇸</button>
+    </div>
   </div>
-</div>
+
   <div class="app">
     <h1 id="appTitle">Weather App</h1>
 
+    <!-- 🔍 Tìm kiếm -->
     <div class="search-container">
-      <input type="text" id="cityInput" placeholder="Enter city name..." class="search-box" />
+      <input type="text" id="cityInput" placeholder="Enter city name..." class="search-box" autocomplete="off" />
       <button id="searchBtn" class="search-button">Search</button>
+      <ul id="suggestions" class="suggestions-list"></ul>
     </div>
 
+
+    <!-- 🌤️ Kết quả -->
     <div class="weather-result" id="weatherResult"></div>
     <div id="aiAdviceBox" class="ai-advice" style="display:none;"></div>
     <div id="weatherAlert" style="margin-top: 20px;"></div>
 
-    <!-- 🔥 Biểu đồ nhiệt độ -->
+    <!-- 📊 Biểu đồ nhiệt độ -->
     <div class="chart-container" id="chartSection" style="display:none;">
       <h3 style="text-align:center">📊 Biểu đồ nhiệt độ 5 ngày</h3>
       <canvas id="tempChart"></canvas>
@@ -58,12 +67,13 @@
     </div>
   </div>
 
-  <!-- Import script đúng thứ tự -->
-  <script src="lang.js"></script>
-  <script src="chart.js"></script>
-  <script src="alert.js"></script>
-  <script src="ai.js"></script>
-  <script src="script.js"></script>
-  <script src="chatbox.js"></script>
+  <!-- JS -->
+  <script src="js/cities.js"></script>
+  <script src="js/lang.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/alert.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/chatbox.js"></script>
 </body>
 </html>

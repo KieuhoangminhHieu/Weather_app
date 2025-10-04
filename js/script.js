@@ -1,4 +1,6 @@
 const apiKey = "fa71133247a2cf1b3230a54f371ac4f5";
+
+// DOM
 const searchBtn = document.getElementById("searchBtn");
 const cityInput = document.getElementById("cityInput");
 const weatherResult = document.getElementById("weatherResult");
@@ -6,17 +8,21 @@ const appTitle = document.getElementById("appTitle");
 const historySection = document.getElementById("historySection");
 const historyList = document.getElementById("historyList");
 const backBtn = document.getElementById("backBtn");
-const shareBtn = document.getElementById("shareBtn");
+const suggestionsList = document.getElementById("suggestions");
 
+// State
 let currentWeatherData = null;
 let currentForecastData = null;
 let currentLang = "vi";
 let searchHistory = JSON.parse(localStorage.getItem("weatherHistory")) || [];
+
+/* 🌐 Ngôn ngữ */
 function translateDescription(raw) {
   const desc = raw.toLowerCase();
   const map = translations[currentLang].descriptions;
   return map[desc] || raw;
 }
+
 function updateLanguage(lang) {
   const t = translations[lang];
 
@@ -24,26 +30,18 @@ function updateLanguage(lang) {
   cityInput.placeholder = t.placeholder;
   searchBtn.textContent = t.search;
 
-  // ✅ Cập nhật tiêu đề thời tiết hôm nay nếu đã hiển thị
-  const todayTitle = document.querySelector("#weatherResult h3");
-  if (todayTitle) todayTitle.textContent = t.todayTitle;
+  if (currentWeatherData) showWeather(currentWeatherData);
+  if (currentForecastData) showForecast(currentForecastData);
 
-  // ✅ Cập nhật tiêu đề dự báo nếu đã hiển thị
-  const forecastTitle = document.querySelector("#weatherResult h3 + h3");
-  if (forecastTitle) forecastTitle.textContent = t.forecast;
-
-  // ✅ Cập nhật tiêu đề biểu đồ nếu đã hiển thị
-  const chartTitle = document.querySelector("#chartSection h3");
-  if (chartTitle) chartTitle.textContent = "📊 " + t.forecast;
-
-  // ✅ Cập nhật tiêu đề lịch sử
   const historyTitle = document.querySelector("#historySection h3");
-  if (historyTitle) historyTitle.textContent = lang === "vi" ? "Lịch sử tìm kiếm" : "Search History";
+  if (historyTitle) {
+    historyTitle.textContent = lang === "vi" ? "Lịch sử tìm kiếm" : "Search History";
+  }
 
-  // ✅ Cập nhật nút quay lại
   backBtn.textContent = lang === "vi" ? "🔙 Quay lại" : "🔙 Back";
 }
 
+/* 🖊️ Sự kiện tìm kiếm */
 searchBtn.addEventListener("click", () => {
   const city = cityInput.value.trim();
   if (city) {
@@ -51,6 +49,7 @@ searchBtn.addEventListener("click", () => {
     getWeather(city);
     getForecast(city);
     saveToHistory(city);
+    suggestionsList.style.display = "none"; // ẩn gợi ý sau khi tìm
   } else {
     alert(translations[currentLang].placeholder);
   }
@@ -60,15 +59,58 @@ cityInput.addEventListener("keypress", (e) => {
   if (e.key === "Enter") searchBtn.click();
 });
 
-backBtn.addEventListener("click", () => {
-  weatherResult.innerHTML = "";
-  historySection.style.display = "none";
-  cityInput.style.display = "inline-block";
-  searchBtn.style.display = "inline-block";
-  document.getElementById("chartSection").style.display = "none";
-  document.getElementById("aiAdviceBox").style.display = "none";
+/* ✨ Gợi ý từ cities.js */
+cityInput.addEventListener("input", () => {
+  const query = cityInput.value.toLowerCase().trim();
+  suggestionsList.innerHTML = "";
+
+  if (!query) {
+    suggestionsList.style.display = "none";
+    return;
+  }
+
+  // Lọc thành phố từ cities.js
+  const matches = cities.filter(city =>
+    city.toLowerCase().includes(query)
+  ).slice(0, 10); // giới hạn 10 gợi ý
+
+  if (matches.length === 0) {
+    suggestionsList.style.display = "none";
+    return;
+  }
+
+  // Render danh sách gợi ý
+  matches.forEach(city => {
+    const li = document.createElement("li");
+    li.textContent = city;
+    li.classList.add("suggestion-item");
+    li.onclick = () => {
+      cityInput.value = city;
+      suggestionsList.style.display = "none";
+      searchBtn.click();
+    };
+    suggestionsList.appendChild(li);
+  });
+
+  suggestionsList.style.display = "block";
 });
 
+// Ẩn gợi ý khi click ra ngoài
+document.addEventListener("click", (e) => {
+  if (!suggestionsList.contains(e.target) && e.target !== cityInput) {
+    suggestionsList.style.display = "none";
+  }
+});
+
+/* 🔙 Quay lại */
+backBtn.addEventListener("click", () => {
+  weatherResult.innerHTML = "";
+  document.getElementById("chartSection").style.display = "none";
+  document.getElementById("aiAdviceBox").style.display = "none";
+  backBtn.style.display = "none"; // ẩn lại khi quay về
+});
+
+/* 📜 Lịch sử */
 function saveToHistory(city) {
   if (!searchHistory.includes(city)) {
     searchHistory.unshift(city);
@@ -77,8 +119,14 @@ function saveToHistory(city) {
   }
   renderHistory();
 }
+
 function renderHistory() {
   historyList.innerHTML = "";
+  if (searchHistory.length === 0) {
+    historyList.innerHTML = "<li>Chưa có tìm kiếm nào</li>";
+    return;
+  }
+
   searchHistory.forEach(city => {
     const li = document.createElement("li");
     li.textContent = city;
@@ -89,11 +137,10 @@ function renderHistory() {
     };
     historyList.appendChild(li);
   });
-
-  historySection.style.display = "block";
-  cityInput.style.display = "none";
-  searchBtn.style.display = "none";
+  historySection.style.display = "block"; // luôn hiện lịch sử
 }
+
+/* 🌦️ Thời tiết hiện tại */
 async function getWeather(city) {
   const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
 
@@ -104,9 +151,11 @@ async function getWeather(city) {
     showWeather(data);
   } catch (error) {
     weatherResult.innerHTML = `<p style="color:red">${error.message}</p>`;
-    document.getElementById("chartSection").style.display = "none"; // Ẩn biểu đồ nếu lỗi
+    document.getElementById("chartSection").style.display = "none";
   }
 }
+
+/* 🔮 Dự báo 5 ngày */
 async function getForecast(city) {
   const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
 
@@ -120,16 +169,16 @@ async function getForecast(city) {
     if (forecastContainer) {
       forecastContainer.innerHTML = `<p style="color:red">${error.message}</p>`;
     }
-    document.getElementById("chartSection").style.display = "none"; // Ẩn biểu đồ nếu lỗi
+    document.getElementById("chartSection").style.display = "none";
   }
 }
+
 function showWeather(data) {
   currentWeatherData = data;
   const { name, main, weather, wind } = data;
   const icon = weather[0].icon;
   const iconUrl = `https://openweathermap.org/img/wn/${icon}@2x.png`;
   const t = translations[currentLang];
-  
 
   weatherResult.innerHTML = `
     <h3>${t.todayTitle}</h3>
@@ -143,11 +192,13 @@ function showWeather(data) {
     <div id="forecastContainer"></div>
   `;
 
-  // 🔔 Kiểm tra và hiển thị cảnh báo
   showWeatherAlert(main.temp, weather[0].main, wind.speed);
   getAiAdvice(data);
+
   document.getElementById("aiAdviceBox").style.display = "block";
+  backBtn.style.display = "inline-block";
 }
+
 function showForecast(data) {
   currentForecastData = data;
   const t = translations[currentLang];
@@ -162,8 +213,10 @@ function showForecast(data) {
     }
   });
 
+  const selectedDays = Object.keys(dailyData).slice(0, 5);
+
   let html = "";
-  for (const date in dailyData) {
+  selectedDays.forEach(date => {
     const item = dailyData[date];
     const icon = item.weather[0].icon;
     const iconUrl = `https://openweathermap.org/img/wn/${icon}@2x.png`;
@@ -178,12 +231,11 @@ function showForecast(data) {
         <p>${t.wind}: ${item.wind.speed} m/s</p>
       </div>
     `;
-  }
+  });
 
   forecastContainer.innerHTML = html;
 
-  // ✅ Chỉ hiển thị biểu đồ nếu có ít nhất 2 ngày dữ liệu
-  if (Object.keys(dailyData).length >= 2) {
+  if (selectedDays.length >= 2) {
     document.getElementById("chartSection").style.display = "block";
     renderTemperatureChart(dailyData);
   } else {
@@ -191,8 +243,12 @@ function showForecast(data) {
   }
 }
 
-// 📍 Tự động lấy vị trí khi mở app
+/* 📍 Lấy vị trí */
 window.addEventListener("load", () => {
+  renderHistory();
+  backBtn.style.display = "none"; 
+  document.getElementById("aiAdviceBox").style.display = "none";
+
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -200,95 +256,73 @@ window.addEventListener("load", () => {
         getWeatherByCoords(latitude, longitude);
         getForecastByCoords(latitude, longitude);
       },
-      (error) => {
-        console.warn("Không lấy được vị trí:", error.message);
-        document.getElementById("chartSection").style.display = "none";
-      }
+      (error) => console.warn("Không lấy được vị trí:", error.message)
     );
-  } else {
-    console.warn("Trình duyệt không hỗ trợ định vị.");
-    document.getElementById("chartSection").style.display = "none";
-    document.getElementById("aiAdviceBox").style.display = "none";
   }
 });
 
 async function getWeatherByCoords(lat, lon) {
   const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
-
   try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(translations[currentLang].notFound);
-    const data = await response.json();
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(translations[currentLang].notFound);
+    const data = await res.json();
     showWeather(data);
-  } catch (error) {
-    weatherResult.innerHTML = `<p style="color:red">${error.message}</p>`;
-    document.getElementById("chartSection").style.display = "none";
+  } catch (err) {
+    weatherResult.innerHTML = `<p style="color:red">${err.message}</p>`;
   }
 }
 
 async function getForecastByCoords(lat, lon) {
   const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
-
   try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(translations[currentLang].notFound);
-    const data = await response.json();
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(translations[currentLang].notFound);
+    const data = await res.json();
     showForecast(data);
-  } catch (error) {
-    const forecastContainer = document.getElementById("forecastContainer");
-    if (forecastContainer) {
-      forecastContainer.innerHTML = `<p style="color:red">${error.message}</p>`;
-    }
-    document.getElementById("chartSection").style.display = "none"; // Ẩn biểu đồ nếu lỗi
+  } catch (err) {
+    document.getElementById("forecastContainer").innerHTML = `<p style="color:red">${err.message}</p>`;
   }
 }
-const themeToggle = document.getElementById("themeToggle");
 
+/* 🌙 Dark mode */
+const themeToggle = document.getElementById("themeToggle");
 themeToggle.addEventListener("change", () => {
   document.body.classList.toggle("dark", themeToggle.checked);
 });
+
+/* 🌐 Đa ngôn ngữ */
 const langVi = document.getElementById("langVi");
 const langEn = document.getElementById("langEn");
 
 function setLanguage(lang) {
   currentLang = lang;
-  updateLanguage(currentLang);
+  updateLanguage(lang);
   langVi.classList.toggle("active", lang === "vi");
   langEn.classList.toggle("active", lang === "en");
-
-  // ✅ Re-render nếu đã có dữ liệu
-  if (currentWeatherData) showWeather(currentWeatherData);
-  if (currentForecastData) showForecast(currentForecastData);
 }
+langVi.addEventListener("click", () => setLanguage("vi"));
+langEn.addEventListener("click", () => setLanguage("en"));
+
+/* 🤖 AI Advice */
 async function getAiAdvice(data) {
   const city = data.name;
-
   try {
     const response = await fetch("http://localhost:8080/ai/weather/advice", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ city })
     });
-
     if (!response.ok) throw new Error("AI server error");
 
     const result = await response.json();
-
-    // Hiển thị lời khuyên từ AI
     document.getElementById("aiAdviceBox").innerHTML = `<p>${result.advice}</p>`;
   } catch (error) {
-    console.warn("Lỗi AI, dùng tư vấn nội bộ:", error.message);
-
-    // ✅ Fallback: dùng hàm nội bộ nếu AI lỗi
     const fallback = generateWeatherAdvice(data);
     document.getElementById("aiAdviceBox").innerHTML = `<p>${fallback}</p>`;
   }
 }
 
-langVi.addEventListener("click", () => setLanguage("vi"));
-langEn.addEventListener("click", () => setLanguage("en"));
-// ✅ Khởi tạo trạng thái ban đầu
+// 🚀 Khởi tạo app
 setLanguage(currentLang);
-// 🚀 Khởi động app
 updateLanguage(currentLang);
-renderHistory();

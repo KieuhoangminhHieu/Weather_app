@@ -42,6 +42,7 @@ h1 {
 
 /* 🔍 Tìm kiếm */
 .search-container {
+  position: relative;
   display: flex;
   justify-content: center;
   gap: 10px;
@@ -172,34 +173,125 @@ canvas {
   background: #d0e6ff;
 }
 
-/* 🌙 Dark Mode */
+/* 🌙 Dark Mode cải tiến */
 body.dark {
-  background: linear-gradient(135deg, var(--dark-bg), #4ca1af);
+  background: linear-gradient(135deg, #1e1e2f, #2a2a3d);
   color: var(--text-light);
 }
 
 body.dark .app {
-  background: rgba(30, 30, 30, 0.9);
+  background: rgba(25, 25, 35, 0.95);
   color: var(--text-light);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.dark h1,
+body.dark h2,
+body.dark h3,
+body.dark h4 {
+  color: #ffffff;
 }
 
 body.dark .search-box {
-  background: #444;
+  background: #2c2c3c;
   color: #fff;
-  border: 1px solid #666;
+  border: 1px solid #555;
 }
 
 body.dark .search-button {
-  background: #3498db;
+  background: #4a90e2;
+  color: #fff;
+}
+
+body.dark .search-button:hover {
+  background: #357ab8;
+}
+
+body.dark .weather-result {
+  color: #ddd;
 }
 
 body.dark .forecast-day {
-  background: rgba(50, 50, 50, 0.8);
+  background: rgba(45, 45, 60, 0.9);
   color: #eee;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.5);
+}
+
+body.dark .forecast-day h4 {
+  color: #fff;
 }
 
 body.dark .chart-container {
-  background: rgba(40, 40, 40, 0.8);
+  background: rgba(35, 35, 50, 0.9);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+body.dark .history-item {
+  background: #2f2f3f;
+  color: #fff;
+}
+
+body.dark .history-item:hover {
+  background: #4a90e2;
+  color: #fff;
+}
+
+body.dark #chatBox {
+  background: #1f1f2f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-light);
+}
+
+body.dark #chatHeader {
+  background: #4a90e2;
+  color: #fff;
+}
+
+body.dark #chatMessages {
+  background: #2b2b3c;
+}
+
+body.dark #chatInput {
+  background: #333344;
+  color: #fff;
+  border: none;
+}
+
+body.dark #chatSendBtn {
+  background: #4a90e2;
+}
+
+body.dark #chatSendBtn:hover {
+  background: #357ab8;
+}
+
+body.dark .ai-advice {
+  background: #2a3a4a;
+  border-left: 4px solid #4a90e2;
+  color: #dfefff;
+}
+
+body.dark .lang-button {
+  background: #4a90e2;
+}
+
+body.dark .lang-button.active {
+  background: #1e1e2f;
+  border: 1px solid #4a90e2;
+}
+
+body.dark .toggle-label {
+  background: #4a90e2;
+}
+
+body.dark #chatToggleBtn {
+  background: #4a90e2;
+}
+
+body.dark #chatToggleBtn:hover {
+  background: #357ab8;
 }
 
 /* 🔧 Nhóm điều khiển giao diện */
@@ -328,6 +420,7 @@ body.dark .chart-container {
   border-bottom-left-radius: 8px;
   font-size: 14px;
 }
+
 #chatSendBtn {
   padding: 8px 12px;
   background: var(--primary);
@@ -336,29 +429,6 @@ body.dark .chart-container {
   border-bottom-right-radius: 8px;
   cursor: pointer;
   font-size: 14px;
-}
-
-/* 💬 Dark mode cho chat */
-body.dark #chatBox {
-  background: #2c3e50;
-  color: var(--text-light);
-}
-
-body.dark #chatHeader {
-  background: #3498db;
-}
-
-body.dark #chatMessages {
-  background: #34495e;
-}
-
-body.dark #chatInput {
-  background: #3c3c3c;
-  color: white;
-}
-
-body.dark #chatSendBtn {
-  background: #3498db;
 }
 
 /* 💡 AI gợi ý */
@@ -370,6 +440,72 @@ body.dark #chatSendBtn {
   font-style: italic;
   border-radius: 6px;
 }
+/* 🌙 Hiệu ứng chuyển đổi Light ↔ Dark */
+  body, 
+  .app,
+  .forecast-day,
+  .chart-container,
+  .history-item,
+  #chatBox,
+  #chatHeader,
+  #chatMessages,
+  #chatInput,
+  #chatSendBtn {
+    transition: 
+      background 0.5s ease,
+      color 0.5s ease,
+      border 0.5s ease,
+      box-shadow 0.5s ease;
+}
+/* 🌟 Suggestions dropdown */
+.suggestions-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: calc(100% - 110px); /* 👈 Trừ chiều rộng nút Search nếu cần */
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  animation: fadeInUp 0.4s ease;
+  z-index: 100;
+}
+body.dark .suggestions-list {
+  background: #2c2c3c;
+  border: 1px solid #555;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+}
+
+body.dark .suggestions-list li {
+  color: #f0f0f0;
+}
+
+body.dark .suggestions-list li:hover {
+  background: #4a90e2;
+  color: #fff;
+}
+
+/* 🌙 Dark mode cho suggestions */
+body.dark .suggestions-list {
+  background: #2c2c3c;
+  border: 1px solid #555;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+}
+
+body.dark .suggestions-list li {
+  color: #f0f0f0;
+}
+
+body.dark .suggestions-list li:hover {
+  background: #4a90e2;
+  color: #fff;
+}
+
 
 /* 🎬 Animation */
 @keyframes fadeInUp {
