@@ -4,8 +4,7 @@
 ## 🚀 Tính năng
 - Nhập tên thành phố và xem thông tin thời tiết hiện tại.
 - Hiển thị nhiệt độ, độ ẩm, tốc độ gió và mô tả thời tiết (đã dịch sang tiếng Việt).
-- Dự báo thời tiết 5 ngày tới (theo giờ trưa).
-- Biểu đồ nhiệt độ trực quan bằng Chart.js.
+ - Dự báo thời tiết 5 ngày tới (theo giờ trưa).
 - Cảnh báo thời tiết theo điều kiện (nhiệt độ cao, mưa, gió mạnh...).
 - Tự động lấy vị trí người dùng khi mở app.
 - Hỗ trợ đa ngôn ngữ: 🇻🇳 Tiếng Việt / 🇺🇸 English.
@@ -18,7 +17,7 @@
 - HTML5: cấu trúc giao diện
 - CSS3: thiết kế và responsive
 - JavaScript (Fetch API): xử lý logic và gọi API
-- Chart.js: vẽ biểu đồ nhiệt độ
+<!-- Chart.js removed from this version -->
 - OpenWeatherMap API: cung cấp dữ liệu thời tiết
 - Spring Boot + Spring AI: backend xử lý tư vấn AI
 - Gemini (Google): sinh phản hồi AI theo ngữ cảnh

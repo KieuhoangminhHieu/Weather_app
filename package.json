@@ -1,0 +1,27 @@
+{
+  "name": "weather_app",
+  "version": "1.0.0",
+  "description": "Ứng dụng web đơn giản giúp tra cứu thời tiết theo thành phố, được xây dựng bằng **HTML, CSS, JavaScript** và sử dụng API từ [OpenWeatherMap](https://openweathermap.org/).",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KieuhoangminhHieu/Weather_app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KieuhoangminhHieu/Weather_app/issues"
+  },
+  "homepage": "https://github.com/KieuhoangminhHieu/Weather_app#readme",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0"
+  }
+}

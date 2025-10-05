@@ -23,15 +23,100 @@ body {
   justify-content: center;
 }
 
-.app {
-  background: rgba(255, 255, 255, 0.85);
-  padding: 40px 30px;
-  border-radius: 20px;
-  text-align: center;
-  width: 100%;
-  max-width: 600px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+/* Make sizing predictable */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
+
+.app {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 28px 20px;
+  border-radius: 14px;
+  text-align: center;
+  width: min(100%, 640px);
+  max-width: 640px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  overflow: hidden;
+}
+
+#mainContent {
+  padding: 10px 0 6px;
+}
+
+.top-tabs, .bottom-tabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 8px 0;
+}
+
+.tab-button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.9);
+  cursor: pointer;
+}
+
+.tab-button.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary-dark);
+}
+
+/* Schedule form */
+#scheduleSection form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+#scheduleSection input[type="text"],
+#scheduleSection input[type="date"] {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+#scheduleSection .schedule-city {
+  min-width: 180px;
+}
+
+#stopsArea { margin-top:8px; grid-column: 1 / -1; }
+#stopsContainer .stop-row { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+#stopsContainer input[type="time"], #stopsContainer input[type="text"] { padding:6px 8px; border-radius:6px; border:1px solid #ccc; }
+#stopsContainer .remove-stop { background:transparent; border:1px solid #e74c3c; color:#e74c3c; padding:4px 6px; border-radius:6px; cursor:pointer; }
+
+/* Schedule list as cards */
+#scheduleList { list-style: none; padding: 0; display: grid; gap: 12px; grid-template-columns: 1fr; }
+#scheduleList li { padding: 12px; background: linear-gradient(180deg,#ffffff,#fbfbfb); border-radius: 12px; box-shadow: 0 6px 18px rgba(18,38,63,0.06); display:flex; gap:12px; align-items:center; justify-content:space-between; }
+#scheduleList li .meta { font-size:13px; color:#666 }
+
+/* weather badge shown on schedule items */
+.schedule-weather { display:flex; gap:8px; align-items:center; font-size:13px; color:#333 }
+.schedule-weather img { width:40px; height:40px; }
+.schedule-weather .temp { font-weight:600 }
+
+/* details panel inside card */
+.schedule-details { margin-top:8px; text-align:left; width:100%; grid-column:1/-1; }
+.schedule-details ul { padding-left: 18px; margin: 6px 0; }
+.schedule-details li { margin-bottom:4px; }
+
+/* card controls */
+#scheduleList li button { background: transparent; border: 1px solid rgba(0,0,0,0.06); padding:6px 8px; border-radius:8px; cursor:pointer; }
+#scheduleList li button.remove-stop { border-color: #e74c3c; color: #e74c3c; }
+
+/* Music button */
+.music-button {
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.music-button:focus { outline: 2px solid var(--primary); }
 
 /* 🧭 Tiêu đề */
 h1 {
@@ -47,6 +132,7 @@ h1 {
   justify-content: center;
   gap: 10px;
   margin-bottom: 20px;
+  align-items: center;
 }
 
 .search-box {
@@ -55,6 +141,7 @@ h1 {
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 14px;
+  min-width: 0; /* allow input to shrink in flex layouts */
 }
 
 .search-button {
@@ -65,6 +152,7 @@ h1 {
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.3s ease;
+  flex: 0 0 auto;
 }
 
 .search-button:hover {
@@ -89,23 +177,24 @@ h1 {
 }
 
 /* 📅 Dự báo */
-#forecastContainer {
+.forecast-grid {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 12px;
   margin-top: 20px;
 }
 
 .forecast-day {
-  flex: 1 1 calc(20% - 10px);
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 12px;
-  padding: 15px;
+  flex: 1 1 120px; /* flexible cards, min width 120px */
+  max-width: 160px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 12px;
   text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease;
-  animation: fadeInUp 0.6s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  animation: fadeInUp 0.5s ease;
 }
 
 .forecast-day:hover {
@@ -119,31 +208,12 @@ h1 {
 }
 
 .forecast-day img {
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   animation: weatherPulse 2s infinite;
 }
 
-/* 📊 Biểu đồ */
-.chart-container {
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 12px;
-  padding: 20px;
-  margin-top: 30px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  overflow-x: auto;
-}
-
-#tempChart {
-  margin-top: 30px;
-  max-width: 100%;
-  height: 300px;
-}
-
-canvas {
-  display: block;
-  margin: 0 auto;
-}
+/* Chart removed */
 
 /* 📜 Lịch sử */
 .history-section {
@@ -258,6 +328,17 @@ body.dark #chatInput {
   color: #fff;
   border: none;
 }
+
+/* Dark mode for schedule */
+body.dark #scheduleList li {
+  background: linear-gradient(180deg, rgba(30,30,40,0.9), rgba(22,22,30,0.9));
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.04);
+  color: #e6eef8;
+}
+body.dark .schedule-weather { color: #fff; }
+body.dark #stopsContainer input, body.dark #scheduleSection input { background: #2c2c3c; color: #fff; border: 1px solid #444; }
+body.dark #scheduleSection label { color: #dfefff; }
 
 body.dark #chatSendBtn {
   background: #4a90e2;
@@ -460,9 +541,10 @@ body.dark #chatToggleBtn:hover {
 /* 🌟 Suggestions dropdown */
 .suggestions-list {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + 6px);
   left: 0;
-  width: calc(100% - 110px); /* 👈 Trừ chiều rộng nút Search nếu cần */
+  width: 100%;
+  max-width: calc(100% - 80px);
   background: #fff;
   border: 1px solid #ccc;
   border-radius: 12px;
@@ -505,8 +587,91 @@ body.dark .suggestions-list li:hover {
   background: #4a90e2;
   color: #fff;
 }
+.music-toggle {
+  margin-top: 20px;
+  text-align: center;
+}
 
+#musicBtn {
+  padding: 10px 16px;
+  font-size: 16px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transition: background 0.3s ease;
+}
 
+#musicBtn:hover {
+  background: var(--primary-dark);
+}
+
+body.dark #musicBtn {
+  background: #4a90e2;
+}
+.rain-drop {
+  position: fixed;
+  top: -10px;
+  width: 2px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.3);
+  animation: rainFall 1s linear infinite;
+  z-index: 0;
+}
+
+@keyframes rainFall {
+  to {
+    transform: translateY(100vh);
+  }
+}
+
+.sun-glow {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, #fffacd, #f9d976);
+  border-radius: 50%;
+  box-shadow: 0 0 60px #f9d976;
+  animation: pulseSun 2s infinite;
+  z-index: 0;
+}
+
+@keyframes pulseSun {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.fog-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('assets/fog.png') repeat;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 0;
+}
+.snow-flake {
+  position: fixed;
+  top: -10px;
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+  animation: snowFall 6s linear infinite;
+  z-index: 0;
+}
+
+@keyframes snowFall {
+  to {
+    transform: translateY(100vh);
+  }
+}
 /* 🎬 Animation */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
@@ -517,4 +682,73 @@ body.dark .suggestions-list li:hover {
   0% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.1); opacity: 0.8; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+/* Day detail panel */
+.day-detail {
+  margin-top: 20px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  text-align: left;
+}
+
+.day-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.day-detail-body {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-top: 10px;
+}
+
+/* Smooth fade transitions for persistent detail updates */
+.day-detail .day-detail-body {
+  transition: opacity 220ms ease;
+  opacity: 1;
+}
+
+.day-detail.persistent { margin-bottom: 12px; }
+
+.forecast-day.selected-day {
+  box-shadow: 0 8px 18px rgba(74,144,226,0.18);
+  transform: translateY(-6px);
+  border: 1px solid rgba(74,144,226,0.2);
+}
+
+.day-entry {
+  min-width: 120px;
+  background: rgba(245,245,245,0.9);
+  padding: 8px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.day-entry .time {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.day-entry img { width: 48px; height: 48px; }
+
+body.dark .day-detail { background: rgba(35,35,50,0.95); }
+body.dark .day-entry { background: rgba(45,45,60,0.9); color: #fff; }
+
+/* Responsive tweaks */
+@media (max-width: 600px) {
+  .app { padding: 18px 12px; border-radius: 10px; }
+  .forecast-grid { gap: 8px; justify-content: flex-start; overflow-x: auto; }
+  .forecast-day { flex: 0 0 140px; max-width: 140px; }
+  .day-detail-body { gap: 8px; }
+  .search-box { font-size: 14px; }
+}
+
+@media (max-width: 400px) {
+  .forecast-day { flex: 0 0 120px; max-width: 120px; }
+  .day-entry { min-width: 100px; }
 }

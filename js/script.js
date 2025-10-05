@@ -1,4 +1,6 @@
-const apiKey = "fa71133247a2cf1b3230a54f371ac4f5";
+// Note: API key moved to backend proxy. Frontend should call /api/* endpoints.
+import { fetchWeather, fetchForecast, fetchWeatherByCoords, fetchForecastByCoords } from './modules/api.js';
+import { loadHistory, addToHistory } from './modules/history.js';
 
 // DOM
 const searchBtn = document.getElementById("searchBtn");
@@ -14,7 +16,7 @@ const suggestionsList = document.getElementById("suggestions");
 let currentWeatherData = null;
 let currentForecastData = null;
 let currentLang = "vi";
-let searchHistory = JSON.parse(localStorage.getItem("weatherHistory")) || [];
+let searchHistory = loadHistory();
 
 /* 🌐 Ngôn ngữ */
 function translateDescription(raw) {
@@ -48,7 +50,8 @@ searchBtn.addEventListener("click", () => {
     weatherResult.innerHTML = `<p>${translations[currentLang].loading}</p>`;
     getWeather(city);
     getForecast(city);
-    saveToHistory(city);
+    searchHistory = addToHistory(city);
+    renderHistory();
     suggestionsList.style.display = "none"; // ẩn gợi ý sau khi tìm
   } else {
     alert(translations[currentLang].placeholder);
@@ -111,15 +114,6 @@ backBtn.addEventListener("click", () => {
 });
 
 /* 📜 Lịch sử */
-function saveToHistory(city) {
-  if (!searchHistory.includes(city)) {
-    searchHistory.unshift(city);
-    if (searchHistory.length > 5) searchHistory.pop();
-    localStorage.setItem("weatherHistory", JSON.stringify(searchHistory));
-  }
-  renderHistory();
-}
-
 function renderHistory() {
   historyList.innerHTML = "";
   if (searchHistory.length === 0) {
@@ -142,12 +136,8 @@ function renderHistory() {
 
 /* 🌦️ Thời tiết hiện tại */
 async function getWeather(city) {
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
-
   try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(translations[currentLang].notFound);
-    const data = await response.json();
+    const data = await fetchWeather(city);
     showWeather(data);
   } catch (error) {
     weatherResult.innerHTML = `<p style="color:red">${error.message}</p>`;
@@ -157,12 +147,8 @@ async function getWeather(city) {
 
 /* 🔮 Dự báo 5 ngày */
 async function getForecast(city) {
-  const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
-
   try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(translations[currentLang].notFound);
-    const data = await response.json();
+    const data = await fetchForecast(city);
     showForecast(data);
   } catch (error) {
     const forecastContainer = document.getElementById("forecastContainer");
@@ -197,6 +183,8 @@ function showWeather(data) {
 
   document.getElementById("aiAdviceBox").style.display = "block";
   backBtn.style.display = "inline-block";
+  applyWeatherEffect(weather[0].description);
+  console.log("Mô tả thời tiết từ API:", data.weather[0].description);
 }
 
 function showForecast(data) {
@@ -262,11 +250,8 @@ window.addEventListener("load", () => {
 });
 
 async function getWeatherByCoords(lat, lon) {
-  const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(translations[currentLang].notFound);
-    const data = await res.json();
+    const data = await fetchWeatherByCoords(lat, lon);
     showWeather(data);
   } catch (err) {
     weatherResult.innerHTML = `<p style="color:red">${err.message}</p>`;
@@ -274,11 +259,8 @@ async function getWeatherByCoords(lat, lon) {
 }
 
 async function getForecastByCoords(lat, lon) {
-  const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(translations[currentLang].notFound);
-    const data = await res.json();
+    const data = await fetchForecastByCoords(lat, lon);
     showForecast(data);
   } catch (err) {
     document.getElementById("forecastContainer").innerHTML = `<p style="color:red">${err.message}</p>`;

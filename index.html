@@ -5,12 +5,12 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weather App</title>
+  <link rel="icon" href="favicon.png" type="image/png" />
 
   <!-- CSS -->
   <link rel="stylesheet" href="css/style.css" />
 
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Chart.js removed -->
 </head>
 <body>
   <!-- 🔧 Nhóm điều khiển giao diện -->
@@ -22,10 +22,25 @@
       <button id="langVi" class="lang-button">🇻🇳</button>
       <button id="langEn" class="lang-button">🇺🇸</button>
     </div>
-  </div>
 
+    <!-- 🎵 Nút nhạc nền -->
+    <button id="musicBtn" class="music-button">🎵</button>
+    <audio id="bgMusic" loop>
+      <source src="assets/audio/lofi-weather.mp3" type="audio/mpeg" />
+    </audio>
+  </div>
   <div class="app">
+    <div id="weatherEffects"></div>
+    <!-- 🌈 Hiệu ứng thời tiết -->
+    <!-- Top tab bar -->
+    <div class="top-tabs">
+      <button class="tab-button" data-tab="weather">Thời tiết</button>
+      <button class="tab-button" data-tab="schedule">Lên lịch</button>
+    </div>
+
     <h1 id="appTitle">Weather App</h1>
+
+    <div id="mainContent">
 
     <!-- 🔍 Tìm kiếm -->
     <div class="search-container">
@@ -33,25 +48,41 @@
       <button id="searchBtn" class="search-button">Search</button>
       <ul id="suggestions" class="suggestions-list"></ul>
     </div>
-
-
     <!-- 🌤️ Kết quả -->
     <div class="weather-result" id="weatherResult"></div>
     <div id="aiAdviceBox" class="ai-advice" style="display:none;"></div>
     <div id="weatherAlert" style="margin-top: 20px;"></div>
 
-    <!-- 📊 Biểu đồ nhiệt độ -->
-    <div class="chart-container" id="chartSection" style="display:none;">
-      <h3 style="text-align:center">📊 Biểu đồ nhiệt độ 5 ngày</h3>
-      <canvas id="tempChart"></canvas>
-    </div>
-
+    <!-- Chart removed -->
     <!-- 📜 Lịch sử tìm kiếm -->
     <div class="history-section" id="historySection" style="display:none;">
       <h3>Lịch sử tìm kiếm</h3>
       <ul id="historyList"></ul>
       <button id="backBtn" class="search-button">🔙 Quay lại</button>
     </div>
+
+    <!-- Schedule section placeholder -->
+    <div id="scheduleSection" style="display:none; text-align:left; padding:10px;">
+      <h3>Lên lịch</h3>
+      <form id="scheduleForm">
+        <label>Tiêu đề: <input type="text" id="scheduleTitle" required/></label>
+        <label>Thành phố (tùy chọn): <input type="text" id="scheduleCity" placeholder="Thành phố (mặc định sẽ dùng ô tìm kiếm)"/></label>
+        <label>Điểm bắt đầu: <input type="text" id="scheduleStart" placeholder="VD: Nhà, Ga, Khách sạn"/></label>
+        <label>Ngày: <input type="date" id="scheduleDate" required/></label>
+        <label>Ghi chú: <input type="text" id="scheduleNote"/></label>
+
+        <div id="stopsArea">
+          <h4>Điểm đến theo khung giờ</h4>
+          <div id="stopsContainer"></div>
+          <button type="button" id="addStopBtn" class="search-button">Thêm điểm</button>
+        </div>
+        <button type="submit" class="search-button">Thêm lịch</button>
+      </form>
+      <h4>Danh sách lịch</h4>
+      <ul id="scheduleList"></ul>
+    </div>
+
+    <!-- Bottom tab bar removed (kept single top tab) -->
   </div>
 
   <!-- 💬 Nút mở chat -->
@@ -68,12 +99,14 @@
   </div>
 
   <!-- JS -->
+  <script src="js/music.js"></script>
   <script src="js/cities.js"></script>
   <script src="js/lang.js"></script>
-  <script src="js/chart.js"></script>
+  <!-- chart.js removed -->
   <script src="js/alert.js"></script>
   <script src="js/ai.js"></script>
-  <script src="js/script.js"></script>
+  <script type="module" src="js/main.js"></script>
+  <script src="js/weatherEffects.js"></script>
   <script src="js/chatbox.js"></script>
 </body>
 </html>

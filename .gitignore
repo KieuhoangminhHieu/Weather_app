@@ -1,0 +1,11 @@
+# Node
+node_modules/
+.env
+
+# Editor
+.vscode/
+.DS_Store
+
+# mac/windows
+Thumbs.db
+Desktop.ini
