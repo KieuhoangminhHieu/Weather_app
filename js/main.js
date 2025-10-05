@@ -410,11 +410,13 @@ const scheduleDate = document.getElementById('scheduleDate');
 const scheduleNote = document.getElementById('scheduleNote');
 const scheduleCity = document.getElementById('scheduleCity');
 const scheduleStart = document.getElementById('scheduleStart');
+const scheduleStartTime = document.getElementById('scheduleStartTime');
 const stopsContainer = document.getElementById('stopsContainer');
 const addStopBtn = document.getElementById('addStopBtn');
 const scheduleListEl = document.getElementById('scheduleList');
 
 let scheduleItems = [];
+let openDetailIndex = null; // preserve which item details are open
 
 function loadSchedule() {
   try {
@@ -463,21 +465,73 @@ function renderSchedule() {
     const details = document.createElement('div');
     details.className = 'schedule-details';
     details.style.display = 'none';
-    // fill details: start, stops
-    const startHtml = `<div><strong>Điểm bắt đầu:</strong> ${it.start || '—'}</div>`;
-    let stopsHtml = '<div><strong>Điểm theo giờ:</strong><ul>';
+  // fill details: start, start time, stops
+  const startHtml = `<div><strong>Điểm bắt đầu:</strong> ${it.start || '—'} ${it.startTime ? ' — ' + it.startTime : ''}</div>`;
+    let stopsHtml = '';
     if (it.stops && it.stops.length) {
+      stopsHtml = '<div><strong>Điểm theo giờ:</strong><ul>';
       it.stops.forEach(s => { stopsHtml += `<li>${s.time} — ${s.place}${s.prepare? ' ('+s.prepare+')':''}</li>`; });
-    } else {
-      stopsHtml += '<li>Chưa có điểm</li>';
+      stopsHtml += '</ul></div>';
     }
-    stopsHtml += '</ul></div>';
     details.innerHTML = startHtml + stopsHtml;
+    // add quick add-stop UI inside details
+    const addQuick = document.createElement('div');
+    addQuick.style.marginTop = '8px';
+    const quickBtn = document.createElement('button');
+    quickBtn.type = 'button'; quickBtn.className = 'search-button'; quickBtn.textContent = '+ Thêm điểm';
+    addQuick.appendChild(quickBtn);
+
+    const quickForm = document.createElement('div');
+    quickForm.style.display = 'none';
+    quickForm.style.marginTop = '8px';
+    quickForm.innerHTML = `
+      <input type="time" class="quick-time" />
+      <input type="text" class="quick-place" placeholder="Địa điểm" />
+      <input type="text" class="quick-prepare" placeholder="Cần chuẩn bị" />
+    `;
+    const qMapBtn = document.createElement('button'); qMapBtn.type='button'; qMapBtn.className='search-button'; qMapBtn.textContent='Map';
+    const qAddBtn = document.createElement('button'); qAddBtn.type='button'; qAddBtn.className='search-button'; qAddBtn.textContent='Thêm';
+    const qCancelBtn = document.createElement('button'); qCancelBtn.type='button'; qCancelBtn.className='remove-stop'; qCancelBtn.textContent='Hủy';
+    quickForm.appendChild(qMapBtn);
+    quickForm.appendChild(qAddBtn);
+    quickForm.appendChild(qCancelBtn);
+    addQuick.appendChild(quickForm);
+    details.appendChild(addQuick);
+
+    quickBtn.addEventListener('click', () => { quickForm.style.display = quickForm.style.display === 'none' ? '' : 'none'; });
+    qCancelBtn.addEventListener('click', () => { quickForm.style.display = 'none'; });
+
+    // map button in quick form targets this quickForm (it contains .quick-place)
+    qMapBtn.addEventListener('click', () => openMap({ type: 'stop', row: quickForm }));
+
+    qAddBtn.addEventListener('click', () => {
+      const time = quickForm.querySelector('.quick-time').value;
+      const place = quickForm.querySelector('.quick-place').value.trim();
+      const prepare = quickForm.querySelector('.quick-prepare').value.trim();
+      if (!time || !place) return alert('Vui lòng nhập giờ và địa điểm');
+      if (!it.stops) it.stops = [];
+      it.stops.push({ time, place, prepare });
+      saveSchedule();
+      toast('Đã thêm điểm');
+      // keep details open for this item after re-render
+      openDetailIndex = idx;
+      renderSchedule();
+    });
     li.appendChild(details);
     detailsBtn.addEventListener('click', () => {
-      details.style.display = details.style.display === 'none' ? '' : 'none';
-      detailsBtn.textContent = details.style.display === 'none' ? 'Xem' : 'Ẩn';
+      const isOpen = details.style.display !== 'none';
+      if (isOpen) {
+        details.style.display = 'none';
+        detailsBtn.textContent = 'Xem';
+        openDetailIndex = null;
+      } else {
+        details.style.display = '';
+        detailsBtn.textContent = 'Ẩn';
+        openDetailIndex = idx;
+      }
     });
+    // preserve open state
+    if (openDetailIndex === idx) { details.style.display = ''; detailsBtn.textContent = 'Ẩn'; }
     scheduleListEl.appendChild(li);
 
     // try to fetch a mini forecast for the scheduled date if within 5 days
@@ -523,35 +577,25 @@ if (scheduleForm) {
           if (time && place) stops.push({ time, place, prepare });
         });
       }
-      if (!title || !date) return alert('Vui lòng nhập tiêu đề và ngày');
-      scheduleItems.push({ title, date, note, city, start: scheduleStart ? scheduleStart.value.trim() : '', stops });
+    if (!title || !date) return alert('Vui lòng nhập tiêu đề và ngày');
+    const startVal = scheduleStart ? scheduleStart.value.trim() : '';
+    const startTimeVal = scheduleStartTime ? scheduleStartTime.value : '';
+    scheduleItems.push({ title, date, note, city, start: startVal, startTime: startTimeVal, stops });
+    // keep this new item open after adding
+    openDetailIndex = scheduleItems.length; // temporarily index (will be length-1 after push)
     saveSchedule();
+    openDetailIndex = scheduleItems.length - 1;
     renderSchedule();
     scheduleForm.reset();
       // clear stops UI
       if (stopsContainer) stopsContainer.innerHTML = '';
+    toast('Đã thêm lịch');
   });
 } else {
   console.warn('Schedule form not found; schedule features disabled');
 }
 
-  // add/remove stops UI
-  function addStopRow(time='', place='', prepare='') {
-    if (!stopsContainer) return;
-    const row = document.createElement('div');
-    row.className = 'stop-row';
-    row.innerHTML = `
-      <input type="time" value="${time}" />
-      <input type="text" name="stopPlace" placeholder="Địa điểm" value="${place}" />
-      <input type="text" name="stopPrepare" placeholder="Cần chuẩn bị" value="${prepare}" />
-    `;
-    const rm = document.createElement('button'); rm.type='button'; rm.className='remove-stop'; rm.textContent='X';
-    rm.addEventListener('click', () => row.remove());
-    row.appendChild(rm);
-    stopsContainer.appendChild(row);
-  }
-
-  if (addStopBtn) addStopBtn.addEventListener('click', () => addStopRow());
+  // (addStopRow with map picker is declared later)
 
 // initialize schedule on load
 loadSchedule();
@@ -607,3 +651,165 @@ function initTabs() {
 }
 
 document.addEventListener('DOMContentLoaded', initTabs);
+
+/* ---------------- Map picker & PDF export ---------------- */
+const mapModal = document.getElementById('mapModal');
+const closeMapModal = document.getElementById('closeMapModal');
+const confirmMapBtn = document.getElementById('confirmMapBtn');
+const confirmMapBtnHeader = document.getElementById('confirmMapBtnHeader');
+const mapContainer = document.getElementById('mapContainer');
+let mapInstance = null;
+let currentMapTarget = null; // { type: 'start'|'stop', rowElement }
+let currentMarker = null;
+const mapSearchInput = document.getElementById('mapSearchInput');
+const mapSearchBtn = document.getElementById('mapSearchBtn');
+const mapSearchResults = document.getElementById('mapSearchResults');
+
+function openMap(target) {
+  currentMapTarget = target; // store where to insert the chosen location
+  mapModal.style.display = '';
+  if (!mapInstance) {
+    mapInstance = L.map(mapContainer).setView([21.0278, 105.8342], 12); // Hanoi default
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(mapInstance);
+    mapInstance.on('click', (e) => {
+      if (currentMarker) currentMarker.setLatLng(e.latlng);
+      else currentMarker = L.marker(e.latlng).addTo(mapInstance);
+    });
+    // attach search handlers
+    if (mapSearchBtn) {
+      mapSearchBtn.addEventListener('click', performMapSearch);
+      mapSearchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performMapSearch(); });
+    }
+  }
+  // autofocus search box
+  setTimeout(() => { if (mapSearchInput) { mapSearchInput.focus(); mapSearchInput.select(); } }, 150);
+}
+
+closeMapModal.addEventListener('click', () => { mapModal.style.display = 'none'; });
+
+confirmMapBtn.addEventListener('click', () => {
+  if (!currentMarker) return alert('Hãy chọn vị trí trên bản đồ');
+  const { lat, lng } = currentMarker.getLatLng();
+  // insert into target
+  if (currentMapTarget) {
+    if (currentMapTarget.type === 'start') {
+      if (scheduleStart) {
+        // prefer human-readable name if available
+        const name = currentMarker._display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        scheduleStart.value = name;
+        // keep coords for potential use
+        scheduleStart.dataset.lat = lat.toFixed(6);
+        scheduleStart.dataset.lng = lng.toFixed(6);
+      }
+    } else if (currentMapTarget.type === 'stop' && currentMapTarget.row) {
+      const placeInput = currentMapTarget.row.querySelector('input[name="stopPlace"]');
+      if (placeInput) {
+        const name = currentMarker._display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        placeInput.value = name;
+        placeInput.dataset.lat = lat.toFixed(6);
+        placeInput.dataset.lng = lng.toFixed(6);
+      }
+    }
+  }
+  mapModal.style.display = 'none';
+});
+
+if (confirmMapBtnHeader) confirmMapBtnHeader.addEventListener('click', () => confirmMapBtn.click());
+
+async function performMapSearch() {
+  const q = mapSearchInput && mapSearchInput.value.trim();
+  if (!q) return;
+  mapSearchResults.innerHTML = '<li>Đang tìm...</li>';
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&addressdetails=1&limit=6`,
+      { headers: { 'Accept-Language': 'vi' } });
+    const items = await res.json();
+    mapSearchResults.innerHTML = '';
+    if (!items || items.length === 0) { mapSearchResults.innerHTML = '<li>Không tìm thấy</li>'; return; }
+    items.forEach(it => {
+      const li = document.createElement('li');
+      li.textContent = it.display_name;
+      li.addEventListener('click', () => {
+        // center map and place marker
+        const lat = parseFloat(it.lat), lon = parseFloat(it.lon);
+        if (mapInstance) {
+          mapInstance.setView([lat, lon], 15);
+          if (currentMarker) currentMarker.setLatLng([lat, lon]);
+          else currentMarker = L.marker([lat, lon]).addTo(mapInstance);
+        }
+        // keep the selected display name for confirm
+        currentMarker._display_name = it.display_name;
+        mapSearchResults.innerHTML = '';
+      });
+      mapSearchResults.appendChild(li);
+    });
+  } catch (e) {
+    mapSearchResults.innerHTML = '<li>Lỗi khi tìm</li>';
+  }
+}
+
+// Hook: allow adding a map-picker button to each new stop row
+function addStopRow(time='', place='', prepare='') {
+  if (!stopsContainer) return;
+  const row = document.createElement('div');
+  row.className = 'stop-row';
+  row.innerHTML = `
+    <input type="time" value="${time}" />
+    <input type="text" name="stopPlace" placeholder="Địa điểm" value="${place}" />
+    <input type="text" name="stopPrepare" placeholder="Cần chuẩn bị" value="${prepare}" />
+  `;
+  const mapBtn = document.createElement('button'); mapBtn.type='button'; mapBtn.className='search-button'; mapBtn.textContent='Map';
+  mapBtn.addEventListener('click', () => openMap({ type: 'stop', row }));
+  const rm = document.createElement('button'); rm.type='button'; rm.className='remove-stop'; rm.textContent='X';
+  rm.addEventListener('click', () => row.remove());
+  row.appendChild(mapBtn);
+  row.appendChild(rm);
+  stopsContainer.appendChild(row);
+}
+
+// add a map selector for start
+if (scheduleStart) {
+  const startMapBtn = document.createElement('button'); startMapBtn.type='button'; startMapBtn.className='search-button'; startMapBtn.textContent='Chọn từ bản đồ';
+  scheduleStart.parentNode.appendChild(startMapBtn);
+  startMapBtn.addEventListener('click', () => openMap({ type: 'start' }));
+}
+
+if (addStopBtn) addStopBtn.addEventListener('click', () => addStopRow());
+
+// Export PDF
+const exportPdfBtn = document.getElementById('exportPdfBtn');
+if (exportPdfBtn) {
+  exportPdfBtn.addEventListener('click', async () => {
+    // use jsPDF (umd)
+    const { jsPDF } = window.jspdf || {}; // some cdn expose jspdf
+    if (!jsPDF) return alert('jsPDF chưa được nạp');
+    const doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.text('Lịch trình', 14, 20);
+    let y = 30;
+    scheduleItems.forEach((it, idx) => {
+      doc.setFontSize(12);
+      doc.text(`${idx+1}. ${it.title} — ${it.date}`, 14, y);
+      y += 8;
+  if (it.start) { doc.text(`   Start: ${it.start}${it.startTime ? ' @'+it.startTime : ''}`, 18, y); y+=6; }
+      if (it.note) { doc.text(`   Note: ${it.note}`, 18, y); y+=6; }
+      if (it.stops && it.stops.length) {
+        it.stops.forEach(s => { doc.text(`   - ${s.time} ${s.place}${s.prepare? ' ('+s.prepare+')':''}`, 18, y); y+=6; });
+      }
+      y += 6;
+      if (y > 270) { doc.addPage(); y = 20; }
+    });
+    doc.save('schedules.pdf');
+  });
+}
+
+// toast helper
+function toast(msg, ms = 2200) {
+  const root = document.getElementById('toastContainer');
+  if (!root) return;
+  const el = document.createElement('div'); el.className = 'toast'; el.textContent = msg;
+  root.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 220); }, ms);
+}

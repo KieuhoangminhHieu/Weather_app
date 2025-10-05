@@ -87,12 +87,21 @@ body {
 #stopsArea { margin-top:8px; grid-column: 1 / -1; }
 #stopsContainer .stop-row { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
 #stopsContainer input[type="time"], #stopsContainer input[type="text"] { padding:6px 8px; border-radius:6px; border:1px solid #ccc; }
+#scheduleSection input[type="time"] { padding:6px 8px; border-radius:6px; border:1px solid #ccc; }
 #stopsContainer .remove-stop { background:transparent; border:1px solid #e74c3c; color:#e74c3c; padding:4px 6px; border-radius:6px; cursor:pointer; }
 
 /* Schedule list as cards */
 #scheduleList { list-style: none; padding: 0; display: grid; gap: 12px; grid-template-columns: 1fr; }
 #scheduleList li { padding: 12px; background: linear-gradient(180deg,#ffffff,#fbfbfb); border-radius: 12px; box-shadow: 0 6px 18px rgba(18,38,63,0.06); display:flex; gap:12px; align-items:center; justify-content:space-between; }
 #scheduleList li .meta { font-size:13px; color:#666 }
+
+/* card left/right layout */
+.schedule-card-left { flex: 1 1 auto; text-align:left; }
+.schedule-card-right { display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
+.schedule-details { margin-top:8px; text-align:left; width:100%; }
+.schedule-details h4 { margin:6px 0; font-size:14px; }
+.schedule-details ul { padding-left: 18px; margin: 6px 0; }
+.schedule-details li { margin-bottom:6px; }
 
 /* weather badge shown on schedule items */
 .schedule-weather { display:flex; gap:8px; align-items:center; font-size:13px; color:#333 }
@@ -386,6 +395,30 @@ body.dark #chatToggleBtn:hover {
   align-items: flex-end;
   gap: 12px;
 }
+
+/* Map modal */
+.modal { position: fixed; inset: 0; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.45); z-index:2000; }
+.modal .modal-content { width: min(900px, 95%); height: 70vh; background: #fff; border-radius:10px; overflow:hidden; display:flex; flex-direction:column; }
+.modal .modal-header { padding:10px 12px; background:#f5f5f5; display:flex; justify-content:space-between; align-items:center; }
+.modal .modal-body { flex:1; display:flex; flex-direction:column; }
+.modal .close-btn { border:none; background:transparent; font-size:18px; cursor:pointer; }
+.leaflet-container { height:100%; width:100%; }
+
+#mapSearchResults li { padding:6px 8px; border-bottom:1px solid #eee; cursor:pointer; }
+#mapSearchResults li:hover { background:#f0f8ff; }
+#mapSearchInput { width:100%; }
+
+/* make map container flexible so confirm button remains visible */
+#mapContainer { flex: 1 1 auto; min-height: 160px; }
+.modal .modal-body > div[style*="text-align:right"] { position: sticky; bottom: 0; background: rgba(255,255,255,0.95); padding-top:6px; }
+.modal .modal-body > div[style*="text-align:right"] .search-button { margin-right:0; }
+
+/* Toast */
+#toastContainer .toast { background: rgba(0,0,0,0.8); color:#fff; padding:8px 12px; border-radius:8px; margin-bottom:8px; min-width:160px; box-shadow:0 6px 18px rgba(0,0,0,0.3); }
+
+/* export button small adjustments */
+#exportPdfBtn { background: #2b8aef; }
+#exportPdfBtn:hover { background: #1f6fd0; }
 
 .toggle-label {
   font-size: 24px;
